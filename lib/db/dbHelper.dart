@@ -51,4 +51,9 @@ class DBHelper {
           note.toMap(),
         );
   }
+
+  // CLOSE DB
+  Future<void> closeDB() async {
+    await this._database?.close();
+  }
 }

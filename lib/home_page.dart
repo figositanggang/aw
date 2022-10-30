@@ -92,6 +92,13 @@ class _AddNoteDIalogState extends State<AddNoteDIalog> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    dbHelper.closeDB();
+  }
 }
 
 class NoteProvider extends ChangeNotifier {
