@@ -49,7 +49,17 @@ class DBHelper {
     await this._database?.insert(
           _tableName,
           note.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.abort,
         );
+  }
+
+  // REMOVE
+  Future<void> removeNote(Note note) async {
+    await this._database?.delete(
+      this._tableName,
+      where: "id = ?",
+      whereArgs: [note.id],
+    );
   }
 
   // CLOSE DB

@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:database_/main.dart';
 import 'package:database_/model/note_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -11,14 +14,14 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String result = "";
+  List<Note> result = [];
 
   @override
   Widget build(BuildContext context) {
     dbHelper.getNote().then(
       (value) {
         setState(() {
-          result = value.toString();
+          result = value;
         });
       },
     );
@@ -26,7 +29,22 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(title: Text("My Database")),
       body: SingleChildScrollView(
-        child: Text(result),
+        child: Column(
+          children: List.generate(result.length, (index) {
+            var res = result[index];
+
+            return ListTile(
+              title: Text(
+                res.toString(),
+              ),
+              trailing: IconButton(
+                  onPressed: () {
+                    dbHelper.removeNote(res);
+                  },
+                  icon: Icon(Icons.delete)),
+            );
+          }),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
@@ -63,6 +81,8 @@ class _AddNoteDIalogState extends State<AddNoteDIalog> {
               TextField(
                 controller: noteProv.id,
                 decoration: InputDecoration(hintText: "Masukkan id..."),
+                keyboardType: TextInputType.numberWithOptions(decimal: false),
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 onChanged: (val) {
                   noteProv.id = val;
                 },
@@ -74,6 +94,8 @@ class _AddNoteDIalogState extends State<AddNoteDIalog> {
                   noteProv.note = val;
                 },
               ),
+
+              // ADD
               ElevatedButton(
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -84,6 +106,10 @@ class _AddNoteDIalogState extends State<AddNoteDIalog> {
                     Note(int.parse(noteProv.id.text),
                         noteProv.note.text.toString()),
                   );
+                  noteProv.id = "";
+                  noteProv.note = "";
+
+                  Navigator.pop(context);
                 },
               ),
             ],
@@ -97,7 +123,7 @@ class _AddNoteDIalogState extends State<AddNoteDIalog> {
   void dispose() {
     super.dispose();
 
-    dbHelper.closeDB();
+    // dbHelper.closeDB();
   }
 }
 
@@ -107,6 +133,8 @@ class NoteProvider extends ChangeNotifier {
 
   set id(value) {
     this._id.text = value;
+    this._id.selection =
+        TextSelection.fromPosition(TextPosition(offset: this._id.text.length));
     notifyListeners();
   }
 
@@ -115,6 +143,9 @@ class NoteProvider extends ChangeNotifier {
 
   set note(value) {
     this._note.text = value;
+    this._note.selection = TextSelection.fromPosition(
+        TextPosition(offset: this._note.text.length));
+    notifyListeners();
     notifyListeners();
   }
 }
